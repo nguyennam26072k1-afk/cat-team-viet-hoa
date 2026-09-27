@@ -315,6 +315,28 @@
 
   .menu-toggle{display:none;background:none;border:none;color:var(--text);font-size:22px;cursor:pointer;}
 
+  .mobile-menu{
+    display:none;flex-direction:column;gap:3px;
+    position:absolute;left:16px;right:16px;top:100%;
+    background:var(--surface);border:1px solid var(--border);border-radius:18px;
+    padding:10px;margin-top:8px;
+    box-shadow:0 18px 36px rgba(0,0,0,.45);z-index:25;
+  }
+  .mm-link{
+    display:flex;align-items:center;gap:10px;padding:11px 13px;border-radius:12px;
+    font-size:14px;color:var(--text);
+  }
+  .mm-link:hover{background:var(--surface-2);}
+  .mm-link.danger{color:var(--red);}
+  .mm-divider{height:1px;background:var(--border);margin:6px 4px;}
+  .mm-socials{display:flex;gap:8px;padding:2px 13px;}
+  #mobileLoginLink{display:flex;}
+  #mobileAccountLink, #mobileLogoutLink{display:none;}
+  #khoDoBtnMobile{display:none;}
+  body.logged-in #mobileLoginLink{display:none;}
+  body.logged-in #mobileAccountLink, body.logged-in #mobileLogoutLink{display:flex;}
+  body.logged-in #khoDoBtnMobile{display:flex;}
+
   /* Hero */
   .hero{padding:40px 0;position:relative;overflow:hidden;}
   .hero > .wrap{background:var(--surface);border:1px solid var(--border);border-radius:28px;padding:48px 40px;}
@@ -589,6 +611,7 @@
     .login-btn{display:none;}
     .account-wrap{display:none;}
     .kho-do-link{display:none!important;}
+    .mobile-menu.open{display:flex;}
     .nav-right{gap:10px;}
     .support-btn{padding:7px 14px;font-size:12.5px;}
     .hero h1{font-size:32px;}
@@ -635,7 +658,22 @@
           <a href="#" class="danger" id="logoutBtn">🚪 Đăng xuất</a>
         </div>
       </div>
-      <button class="menu-toggle" aria-label="Mở menu">☰</button>
+      <button class="menu-toggle" id="menuToggle" aria-label="Mở menu" aria-expanded="false">☰</button>
+    </div>
+    <div class="mobile-menu" id="mobileMenu">
+      <a href="#thuvien" class="mm-link">📚 Thư viện</a>
+      <a href="#duan" class="mm-link">🛠️ Dự án</a>
+      <div class="mm-divider"></div>
+      <div class="mm-socials">
+        <a href="#" class="social-icon facebook" aria-label="Facebook">f</a>
+        <a href="#" class="social-icon zalo" aria-label="Zalo">Z</a>
+        <a href="#" class="social-icon discord" aria-label="Discord">◆</a>
+      </div>
+      <div class="mm-divider"></div>
+      <a href="#" class="mm-link" id="khoDoBtnMobile">🎒 Kho đồ</a>
+      <a href="#" class="mm-link" id="mobileLoginLink">👤 Đăng nhập</a>
+      <a href="#" class="mm-link" id="mobileAccountLink">👤 Tài khoản của tôi</a>
+      <a href="#" class="mm-link danger" id="mobileLogoutLink">🚪 Đăng xuất</a>
     </div>
   </div>
 </header>
@@ -1558,6 +1596,11 @@ Game cung cấp kho vũ khí khổng lồ cùng khả năng tùy chỉnh linh ho
   var accountWrap = document.querySelector('.account-wrap');
   var logoutBtn = document.getElementById('logoutBtn');
   var khoDoBtn = document.getElementById('khoDoBtn');
+  var khoDoBtnMobile = document.getElementById('khoDoBtnMobile');
+  var mobileLoginLink = document.getElementById('mobileLoginLink');
+  var mobileAccountLink = document.getElementById('mobileAccountLink');
+  var mobileLogoutLink = document.getElementById('mobileLogoutLink');
+  var mobileMenu = document.getElementById('mobileMenu');
   var balanceEl = document.getElementById('caBalanceNum');
   var MEMBERS_KEY = 'catteam_members_count';
   var LOGGED_KEY = 'catteam_logged_in';
@@ -1636,6 +1679,34 @@ Game cung cấp kho vũ khí khổng lồ cùng khả năng tùy chỉnh linh ho
     khoDoBtn.addEventListener('click', function(e){
       e.preventDefault();
       alert('Kho đồ đang được phát triển, sẽ sớm ra mắt!');
+    });
+  }
+  if(khoDoBtnMobile){
+    khoDoBtnMobile.addEventListener('click', function(e){
+      e.preventDefault();
+      if(mobileMenu) mobileMenu.classList.remove('open');
+      alert('Kho đồ đang được phát triển, sẽ sớm ra mắt!');
+    });
+  }
+  if(mobileLoginLink){
+    mobileLoginLink.addEventListener('click', function(e){
+      e.preventDefault();
+      if(mobileMenu) mobileMenu.classList.remove('open');
+      if(window.__openLoginModal) window.__openLoginModal();
+    });
+  }
+  if(mobileAccountLink){
+    mobileAccountLink.addEventListener('click', function(e){
+      e.preventDefault();
+      if(mobileMenu) mobileMenu.classList.remove('open');
+    });
+  }
+  if(mobileLogoutLink){
+    mobileLogoutLink.addEventListener('click', function(e){
+      e.preventDefault();
+      try{ localStorage.removeItem(LOGGED_KEY); }catch(err){}
+      if(mobileMenu) mobileMenu.classList.remove('open');
+      renderLoginBtnState();
     });
   }
 
@@ -1829,8 +1900,50 @@ Game cung cấp kho vũ khí khổng lồ cùng khả năng tùy chỉnh linh ho
     window.scrollTo({top:0, behavior:'smooth'});
   });
 })();
+
+(function(){
+  var toggleBtn = document.getElementById('menuToggle');
+  var mobileMenu = document.getElementById('mobileMenu');
+  if(!toggleBtn || !mobileMenu) return;
+
+  function closeMenu(){
+    mobileMenu.classList.remove('open');
+    toggleBtn.setAttribute('aria-expanded', 'false');
+  }
+  function toggleMenu(){
+    var willOpen = !mobileMenu.classList.contains('open');
+    mobileMenu.classList.toggle('open', willOpen);
+    toggleBtn.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
+  }
+
+  toggleBtn.addEventListener('click', function(e){
+    e.preventDefault();
+    e.stopPropagation();
+    toggleMenu();
+  });
+
+  mobileMenu.querySelectorAll('a[href^="#"]').forEach(function(link){
+    link.addEventListener('click', function(){
+      if(link.id === 'mobileLoginLink' || link.id === 'khoDoBtnMobile' ||
+         link.id === 'mobileAccountLink' || link.id === 'mobileLogoutLink') return;
+      closeMenu();
+    });
+  });
+
+  document.addEventListener('click', function(e){
+    if(!mobileMenu.classList.contains('open')) return;
+    if(mobileMenu.contains(e.target) || toggleBtn.contains(e.target)) return;
+    closeMenu();
+  });
+  document.addEventListener('keydown', function(e){
+    if(e.key === 'Escape') closeMenu();
+  });
+  window.addEventListener('resize', function(){
+    if(window.innerWidth > 640) closeMenu();
+  });
+})();
 </script>
 
 </body>
 </html>
-"update Trang chủ"
+"update Trang Chủ"
