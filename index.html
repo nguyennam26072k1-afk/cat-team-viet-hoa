@@ -1789,6 +1789,10 @@ Game cung cấp kho vũ khí khổng lồ cùng khả năng tùy chỉnh linh ho
   });
 
   var modalDlBtn = document.getElementById('modalDlBtn');
+  // Link tải Việt hóa theo tên game (chỉ dùng sau khi đã mua)
+  var DL_LINKS = {
+    'SD Gundam G Generation Cross Rays Platinum Edition': 'https://drive.usercontent.google.com/download?id=155bFWS4bz_FcZze-IoccOq6jtyT0yVy3&export=download&authuser=0'
+  };
   function gameId(card){ var h=card.querySelector('h3'); return h?h.textContent.trim():''; }
   function isOwned(id){ var a=window.__store.get(); return !!a && a.o.indexOf(id)!==-1; }
   function refreshOwned(){
@@ -1829,7 +1833,14 @@ Game cung cấp kho vũ khí khổng lồ cùng khả năng tùy chỉnh linh ho
       }
       var id = gameId(currentCard);
       if(acc.o.indexOf(id)!==-1){
-        alert('Đang tải bản Việt hóa: ' + id);
+        var link = DL_LINKS[id];
+        if(link){
+          var a = document.createElement('a');
+          a.href = link; a.target = '_blank'; a.rel = 'noopener';
+          document.body.appendChild(a); a.click(); a.remove();
+        } else {
+          alert('Bản Việt hóa của "' + id + '" chưa có link tải. Vui lòng liên hệ Cat Team.');
+        }
         return;
       }
       var price = parseInt(priceEl.textContent.replace(/[^0-9]/g, ''), 10) || 0;
@@ -2687,4 +2698,4 @@ Game cung cấp kho vũ khí khổng lồ cùng khả năng tùy chỉnh linh ho
 </script>
 </body>
 </html>
-update Trang chủ
+update trang chủ
